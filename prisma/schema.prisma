@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  email     String    @unique
+  status    String    @default("active") // Enums: active, inactive, locked
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  roles      UserRoles[]
+  profile    UserProfiles?
+  loginLogs  LoginLogs[]
+  refreshToken RefreshToken[]
+  attributes UserAttributes[]
+}
+
+model UserProfiles {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  firstName String
+  lastName  String?
+  gender    Int      @default(0) // Enums of Int: 0-Unisex; 1-Male; 2-Female
+  birthday  DateTime?
+  address   String?
+  phone     String?
+  company   String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  token      String   @unique
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  isActive   Boolean  @default(true)
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAttributes {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+model LoginLogs {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  attempts    Int      @default(0)
+  lastAttempt DateTime @default(now())
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Roles {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  permissions RolePermissions[]
+  users       UserRoles[]
+}
+
+model Permissions {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  roles RolePermissions[]
+}
+
+model UserRoles {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  roleId Int
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Roles @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermissions {
+  id           Int  @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+
+  role       Roles       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
