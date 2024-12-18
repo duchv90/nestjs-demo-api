@@ -122,6 +122,7 @@ src/
 ├── interfaces/             # Shared TypeScript interfaces/types
 ├── constants/              # Application-wide constants
 └── assets/                 # Static files or templates
+```
 
 ## Resources
 
