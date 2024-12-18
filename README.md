@@ -10,6 +10,9 @@ The Identity Management System (IMS) provides functionalities to manage user ide
 - **User Authentication**: Ensure that users are who they claim to be.
 - **Authorization**: Provide access rights based on user roles.
 
+
+
+
 ---
 
 ## Prerequisites
@@ -22,6 +25,9 @@ Before running this project, ensure you have the following installed:
 - PostgreSQL, MySQL, or any supported Prisma database
 
 ---
+
+
+
 
 ## Getting Started
 
@@ -104,6 +110,7 @@ With Mau, you can deploy your application in just a few clicks, allowing you to 
 
 ## Project Structure
 
+```plaintext
 src/
 ├── app.module.ts           # Root application module
 ├── main.ts                 # Application entry point
