@@ -13,9 +13,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     const { user, status, message } = await this.authService.validateUser(username, password);
     if (!user) {
       throw new UnauthorizedException({
-        statusCode: 401,
-        status: status,
-        errorMessage: message,
+        success: true,
+        message: message,
+        data: {
+          statusCode: 401,
+          status: status,
+        }
       });
     }
     return user;
