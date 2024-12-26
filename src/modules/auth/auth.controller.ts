@@ -28,7 +28,6 @@ export class AuthController {
     return this.authService.logout(refreshToken);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('/refresh-token')
   @HttpCode(HttpStatus.OK)
   refreshAccessToken(@GetToken() refreshToken: string) {
