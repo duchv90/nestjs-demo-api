@@ -21,12 +21,14 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
   async logout(@GetToken() refreshToken: string) {
     return this.authService.logout(refreshToken);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('/refresh-token')
   @HttpCode(HttpStatus.OK)
   refreshAccessToken(@GetToken() refreshToken: string) {

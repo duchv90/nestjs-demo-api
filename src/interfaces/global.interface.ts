@@ -4,6 +4,11 @@ export interface ResponseData<T> {
   data?: T;
 }
 
+export interface AuthLogin {
+  username: string;
+  password: string;
+}
+
 export interface AuthUser {
   userId: number;
   username: string;

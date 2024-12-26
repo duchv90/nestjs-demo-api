@@ -5,8 +5,10 @@ import { UsersService } from 'src/modules/users/users.service';
 import { Logger } from 'src/core/logger/logger.service';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { ResponseData, AuthUser } from 'src/interfaces/global.interface';
-import { JWT_CONSTANTS } from 'src/constants/auth';
+import { JWT_CONSTANTS, LOGIN_STATUS } from 'src/constants/auth';
 import { USERS_STATUS } from 'src/constants/users';
+import { RESPONSE_MESSAGES } from 'src/constants/message';
+import { FormatString } from 'src/utils/string.utils';
 
 @Injectable()
 export class AuthService {
@@ -29,18 +31,46 @@ export class AuthService {
   }
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.getUser({
-      username: username,
-      status: USERS_STATUS.ACTIVE,
-    });
+    try {
+      const user = await this.usersService.getUser({
+        username: username,
+      });
 
-    if (user && bcrypt.compareSync(pass, user.password)) {
-      return {
-        userId: user.id,
-        username: user.username,
+      if (!user) return {
+        user: null,
+        status: LOGIN_STATUS.USER_NOT_FOUND,
+        message: RESPONSE_MESSAGES.USER_NOT_FOUND
       };
-    } else {
-      return null;
+
+      if (user && bcrypt.compareSync(pass, user.password)) {
+        if (user.status === USERS_STATUS.ACTIVE) {
+          return {
+            user: {
+              userId: user.id,
+              username: user.username,
+            },
+            status: LOGIN_STATUS.SUCCESS,
+            message: FormatString(RESPONSE_MESSAGES.GET_SINGLE_SUCCESS, user.username)
+          };
+        }
+        return {
+          user: null,
+          status: LOGIN_STATUS.ACCOUNT_LOCKED,
+          message: RESPONSE_MESSAGES.USER_NOT_ACTIVE
+        };
+      } else {
+        return {
+          user: null,
+          status: LOGIN_STATUS.WRONG_PASSWORD,
+          message: RESPONSE_MESSAGES.WRONG_USER_PASSWORD
+        };
+      }
+    } catch (error) {
+      return {
+        user: null,
+        status: LOGIN_STATUS.SERVER_ERROR,
+        message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+      };
     }
   }
 

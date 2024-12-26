@@ -18,4 +18,7 @@ export const RESPONSE_MESSAGES = {
     'Please enter your current password to update information.',
   UNIQUE_CONSTRAINT_FAILED: 'Unique constraint failed on the fields: ({0})',
   USERS_UPDATE_PERMISSION: 'You do not have permission to update this user',
+  USER_NOT_FOUND: 'Account does not exist. Please check your email address or username.',
+  WRONG_USER_PASSWORD: 'Password is incorrect.',
+  USER_NOT_ACTIVE: 'Account not activated.'
 };
