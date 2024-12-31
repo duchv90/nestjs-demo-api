@@ -30,6 +30,15 @@ export class UserDto extends ProfileDto {
   status: string;
 }
 
+export class UserInfoDto {
+  id: number;
+  username: string;
+  created: Date;
+  updated: Date;
+  roles: string[];
+  permissions: string[];
+}
+
 export class UpdateUserDto {
   @IsNotEmpty()
   @IsEmail()

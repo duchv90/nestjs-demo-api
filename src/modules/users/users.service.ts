@@ -4,13 +4,14 @@ import * as bcrypt from 'bcrypt';
 import { RESPONSE_MESSAGES } from 'src/constants/message';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { Logger } from 'src/core/logger/logger.service';
-import { ResponseData } from 'src/interfaces/global.interface';
+import { AuthUser, ResponseData } from 'src/interfaces/global.interface';
 import { FormatString } from 'src/utils/string.utils';
 import {
   CreateUserDto,
   ProfileDto,
   UpdateUserDto,
   UserDto,
+  UserInfoDto,
 } from './dto/users.dto';
 import {
   USERS_GENDER,
@@ -28,6 +29,67 @@ export class UsersService {
     private prisma: PrismaService,
     private readonly logger: Logger,
   ) {}
+
+  async getUserInfo(user: AuthUser): Promise<ResponseData<object>> {
+    try {
+      if (user.userId) {
+        const userData = await this.prisma.users.findUnique({
+          where: { id: user.userId },
+          include: {
+            roles: {
+              include: {
+                role: {
+                  include: {
+                    permissions: {
+                      include: {
+                        permission: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Get all permission name
+        const userPermissions: string[] = userData.roles.reduce((acc, ur) => {
+          return [
+            ...new Set([
+              ...acc,
+              ...ur.role.permissions.map((rp) => rp.permission.name),
+            ]),
+          ];
+        }, []);
+
+        const data: UserInfoDto = {
+          id: userData.id,
+          username: userData.username,
+          created: new Date(userData.createdAt),
+          updated: new Date(userData.updatedAt),
+          roles: userData.roles.map((ur) => ur.role.name),
+          permissions: userPermissions,
+        };
+
+        return {
+          success: true,
+          message: FormatString(
+            RESPONSE_MESSAGES.GET_SUCCESS,
+            `${this.USERS_NAME} with username: ${userData.username}`,
+          ),
+          data: data,
+        };
+      }
+
+      throw new BadRequestException(FormatString(
+        RESPONSE_MESSAGES.RESOUCE_NOT_FOUND,
+        this.USERS_NAME,
+      ));
+    } catch (error) {
+      this.logger.log('Users fetch error: ' + error.message, this.LOG_CONTEXT);
+      throw new BadRequestException(RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   async getUser(where: Prisma.UsersWhereUniqueInput) {
     try {

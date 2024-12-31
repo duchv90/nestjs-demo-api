@@ -3,6 +3,7 @@ export const RESPONSE_MESSAGES = {
     'An unexpected error occurred. Please try again later.',
   ACCESS_DENIED: 'Access denied',
   RESOUCE_NOT_FOUND: '{0} not found.',
+  GET_SUCCESS: '{0} retrieved successfully.',
   GET_LIST_SUCCESS: '{0} retrieved successfully.',
   GET_SINGLE_SUCCESS: 'Get {0} completed successfully.',
   CREATE_SUCCESS: '{0} created successfully.',

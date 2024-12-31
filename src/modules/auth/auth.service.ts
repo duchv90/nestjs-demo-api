@@ -80,11 +80,7 @@ export class AuthService {
         secret: secret || JWT_CONSTANTS.SECRET,
       });
     } catch (err) {
-      this.logger.error(
-        'Token {0} verification failed: {1}',
-        token,
-        err.message,
-      );
+      this.logger.error(`Token ${token} verification failed: ${err.message}`);
       return null;
     }
   }
@@ -159,7 +155,7 @@ export class AuthService {
           message: 'Token created successfully',
           data: {
             access_token: accessToken,
-            refesh_token: refreshToken,
+            refresh_token: refreshToken,
           },
         };
       } else {
@@ -214,7 +210,7 @@ export class AuthService {
             message: 'Access token refreshed successfully',
             data: {
               access_token: accessToken,
-              refesh_token: newRefreshToken,
+              refresh_token: newRefreshToken,
             },
           };
         }

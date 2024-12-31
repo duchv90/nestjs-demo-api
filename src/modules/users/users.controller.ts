@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Body,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { SuperAdminGuard } from './super-admin.guard';
@@ -20,6 +21,18 @@ import { Permissions } from 'src/common/decorators/permissions.decorator';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  /**
+   * Get current user profile
+   *
+   * @async
+   * @returns {object} UserDto
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('/info')
+  async getUserInfo(@Request() req) {
+    return this.usersService.getUserInfo(req.user);
+  }
 
   /**
    * Get a list of users
