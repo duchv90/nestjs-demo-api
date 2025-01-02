@@ -49,6 +49,7 @@ export class UsersService {
                 },
               },
             },
+            profile: true,
           },
         });
 
@@ -65,6 +66,20 @@ export class UsersService {
         const data: UserInfoDto = {
           id: userData.id,
           username: userData.username,
+          profile: {
+            id: userData.profile.id,
+            userId: userData.id,
+            firstName: userData.profile.firstName,
+            lastName: userData.profile.lastName,
+            gender: userData.profile.gender,
+            birthday: new Date(userData.profile.birthday),
+            address: userData.profile.address,
+            phone: userData.profile.phone,
+            company: userData.profile.company,
+            avatarUrl: userData.profile.avatarUrl,
+            created: new Date(userData.profile.createdAt),
+            updated: new Date(userData.profile.updatedAt),
+          },
           created: new Date(userData.createdAt),
           updated: new Date(userData.updatedAt),
           roles: userData.roles.map((ur) => ur.role.name),

@@ -31,7 +31,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('/info')
   async getUserInfo(@Request() req) {
-    return this.usersService.getUserInfo(req.user);
+    return await this.usersService.getUserInfo(req.user);
   }
 
   /**
@@ -45,7 +45,7 @@ export class UsersController {
   @Get()
   @Permissions(USERS_PERMISSTIONS.VIEW_USERS)
   async getUsers() {
-    return this.usersService.getUsers();
+    return await this.usersService.getUsers();
   }
 
   /**

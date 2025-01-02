@@ -149,7 +149,7 @@ export class AuthService {
         const payload = { username: user.username, userId: user.userId };
         const accessToken: string = await this.generateAccessToken(payload);
         const refreshToken: string = await this.generateRefreshToken(payload);
-        this.saveRefreshToken(user.userId, refreshToken);
+        await this.saveRefreshToken(user.userId, refreshToken);
         return {
           success: true,
           message: 'Token created successfully',
@@ -178,7 +178,7 @@ export class AuthService {
 
   async logout(refreshToken: string): Promise<ResponseData<object>> {
     try {
-      this.deleteRefreshToken(refreshToken);
+      await this.deleteRefreshToken(refreshToken);
       return {
         success: true,
         message: 'Logout successful',
@@ -202,8 +202,8 @@ export class AuthService {
           const accessToken: string = await this.generateAccessToken(payload);
           const newRefreshToken: string =
             await this.generateRefreshToken(payload);
-          this.deleteRefreshToken(refreshToken);
-          this.saveRefreshToken(user.userId, newRefreshToken);
+          await this.deleteRefreshToken(refreshToken);
+          await this.saveRefreshToken(user.userId, newRefreshToken);
 
           return {
             success: true,
@@ -224,6 +224,39 @@ export class AuthService {
       return {
         success: false,
         message: 'Invalid request',
+      };
+    }
+  }
+
+  async verifyUser(user: AuthUser): Promise<ResponseData<object>> {
+    try {
+      const userData = await this.prisma.users.findUnique({
+        where: { id: user.userId }
+      });
+      if (userData) {
+        return {
+          success: true,
+          message: 'Authentication successful',
+          data: {
+            authenticated: true,
+          }
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Authentication failed',
+          data: {
+            authenticated: false,
+          }
+        };
+      }
+    } catch {
+      return {
+        success: false,
+        message: 'Authentication failed',
+        data: {
+          authenticated: false,
+        }
       };
     }
   }

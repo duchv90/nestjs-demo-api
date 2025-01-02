@@ -34,7 +34,7 @@ export class RolesController {
   @Get()
   @Permissions(USERS_PERMISSTIONS.VIEW_ROLES)
   async getRoles() {
-    return this.rolesService.getRoles();
+    return await this.rolesService.getRoles();
   }
 
   /**

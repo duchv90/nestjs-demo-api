@@ -33,6 +33,7 @@ export class UserDto extends ProfileDto {
 export class UserInfoDto {
   id: number;
   username: string;
+  profile: ProfileDto;
   created: Date;
   updated: Date;
   roles: string[];

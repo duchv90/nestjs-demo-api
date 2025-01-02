@@ -7,8 +7,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local-auth.guard';
 import { GetToken } from 'src/common/decorators/token.decorator';
+import { LocalAuthGuard } from './local-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -18,19 +19,25 @@ export class AuthController {
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   async login(@Request() req) {
-    return this.authService.login(req.user);
+    return await this.authService.login(req.user);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
   async logout(@GetToken() refreshToken: string) {
-    return this.authService.logout(refreshToken);
+    return await this.authService.logout(refreshToken);
   }
 
   @Post('/refresh-token')
   @HttpCode(HttpStatus.OK)
-  refreshAccessToken(@GetToken() refreshToken: string) {
-    return this.authService.refreshToken(refreshToken);
+  async refreshAccessToken(@GetToken() refreshToken: string) {
+    return await this.authService.refreshToken(refreshToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/verify')
+  @HttpCode(HttpStatus.OK)
+  async verify(@Request() req) {
+    return await this.authService.verifyUser(req.user);
   }
 }
