@@ -7,13 +7,18 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { PermissionsService } from './permissions.service';
-import { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto';
-import { PermissionsGuard } from './permissions.guard';
+import { PermissionsGuard } from 'src/modules/permissions/permissions.guard';
+import { PermissionsService } from 'src/modules/permissions/permissions.service';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
+import {
+  CreatePermissionDto,
+  UpdatePermissionDto,
+} from 'src/modules/permissions/dto/permission.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
 import { USERS_PERMISSTIONS } from 'src/constants/users';
 
 @Controller('permissions')
@@ -29,8 +34,8 @@ export class PermissionsController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get()
   @Permissions(USERS_PERMISSTIONS.VIEW_PERMISSIONS)
-  async getPermissions() {
-    return await this.permissionsService.getPermissions();
+  async getPermissions(@Query() pagination: PaginationDto) {
+    return await this.permissionsService.getPermissions(pagination);
   }
 
   /**

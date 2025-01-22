@@ -4,16 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Permissions, Prisma } from '@prisma/client';
+import { PrismaService } from 'src/core/database/prisma.service';
+import { Logger } from 'src/core/logger/logger.service';
+import { ResponseData } from 'src/interfaces/global.interface';
+import { FormatString } from 'src/utils/string.utils';
 import {
   CreatePermissionDto,
   PermissionDto,
   UpdatePermissionDto,
-} from './dto/permission.dto';
-import { PrismaService } from 'src/core/database/prisma.service';
-import { Logger } from 'src/core/logger/logger.service';
-import { ResponseData } from 'src/interfaces/global.interface';
+} from 'src/modules/permissions/dto/permission.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
 import { RESPONSE_MESSAGES } from 'src/constants/message';
-import { FormatString } from 'src/utils/string.utils';
 
 @Injectable()
 export class PermissionsService {
@@ -25,10 +26,20 @@ export class PermissionsService {
     private readonly logger: Logger,
   ) {}
 
-  async getPermissions(): Promise<ResponseData<object>> {
+  async getPermissions(
+    pagination: PaginationDto,
+  ): Promise<ResponseData<object>> {
     try {
       // Get all permissions from Database. Update filtering and sorting (https://www.prisma.io/docs/orm/prisma-client/queries/filtering-and-sorting#sort-by-relation)
-      const permissions: any = await this.prisma.permissions.findMany();
+      const { page, pageSize } = pagination;
+      const skip = (page - 1) * pageSize;
+      const permissions: any = await this.prisma.permissions.findMany({
+        skip,
+        take: pageSize,
+      });
+
+      const permissionsCount = await this.prisma.permissions.count();
+
       const data: PermissionDto[] = permissions.map((entity: Permissions) => ({
         id: entity.id,
         name: entity.name,
@@ -43,7 +54,12 @@ export class PermissionsService {
           RESPONSE_MESSAGES.GET_LIST_SUCCESS,
           this.PERMISSIONS_NAME,
         ),
-        data: data,
+        data: {
+          permissions: data,
+          page: page,
+          pageSize: pageSize,
+          total: permissionsCount,
+        },
       };
     } catch (error) {
       this.logger.log(

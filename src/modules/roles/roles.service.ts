@@ -7,7 +7,6 @@ import { Prisma, Roles } from '@prisma/client';
 import { PrismaService } from 'src/core/database/prisma.service';
 import { Logger } from 'src/core/logger/logger.service';
 import { ResponseData } from 'src/interfaces/global.interface';
-import { RESPONSE_MESSAGES } from 'src/constants/message';
 import { FormatString } from 'src/utils/string.utils';
 import {
   CreateRoleDto,
@@ -16,7 +15,9 @@ import {
   RoleDto,
   RolePermissionsDto,
   UpdateRoleDto,
-} from './dto/role.dto';
+} from 'src/modules/roles/dto/role.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
+import { RESPONSE_MESSAGES } from 'src/constants/message';
 
 @Injectable()
 export class RolesService {
@@ -34,10 +35,16 @@ export class RolesService {
    * @async
    * @returns {Promise<ResponseData<object>>}
    */
-  async getRoles(): Promise<ResponseData<object>> {
+  async getRoles(pagination: PaginationDto): Promise<ResponseData<object>> {
     try {
       // Get all roles from Database. Update filtering and sorting (https://www.prisma.io/docs/orm/prisma-client/queries/filtering-and-sorting#sort-by-relation)
-      const roles: any = await this.prisma.roles.findMany();
+      const { page, pageSize } = pagination;
+      const skip = (page - 1) * pageSize;
+      const roles: any = await this.prisma.roles.findMany({
+        skip,
+        take: pageSize,
+      });
+      const rolesCount = await this.prisma.roles.count();
       const data: RoleDto[] = roles.map((entity: Roles) => ({
         id: entity.id,
         name: entity.name,
@@ -52,7 +59,12 @@ export class RolesService {
           RESPONSE_MESSAGES.GET_LIST_SUCCESS,
           this.ROLES_NAME,
         ),
-        data: data,
+        data: {
+          roles: data,
+          page: page,
+          pageSize: pageSize,
+          total: rolesCount,
+        },
       };
     } catch (error) {
       this.logger.log('Roles fetch error: ' + error.message, this.LOG_CONTEXT);

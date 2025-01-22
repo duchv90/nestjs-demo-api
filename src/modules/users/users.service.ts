@@ -12,7 +12,8 @@ import {
   UpdateUserDto,
   UserDto,
   UserInfoDto,
-} from './dto/users.dto';
+} from 'src/modules/users/dto/users.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
 import {
   USERS_GENDER,
   USERS_PERMISSTIONS,
@@ -96,10 +97,9 @@ export class UsersService {
         };
       }
 
-      throw new BadRequestException(FormatString(
-        RESPONSE_MESSAGES.RESOUCE_NOT_FOUND,
-        this.USERS_NAME,
-      ));
+      throw new BadRequestException(
+        FormatString(RESPONSE_MESSAGES.RESOUCE_NOT_FOUND, this.USERS_NAME),
+      );
     } catch (error) {
       this.logger.log('Users fetch error: ' + error.message, this.LOG_CONTEXT);
       throw new BadRequestException(RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR);
@@ -117,14 +117,25 @@ export class UsersService {
     }
   }
 
-  async getUsers(): Promise<ResponseData<object>> {
+  async getUsers(pagination: PaginationDto): Promise<ResponseData<object>> {
     try {
       // Get all users from Database. Update filtering and sorting (https://www.prisma.io/docs/orm/prisma-client/queries/filtering-and-sorting#sort-by-relation)
+      const { page, pageSize } = pagination;
+      const skip = (page - 1) * pageSize;
       const users = await this.prisma.users.findMany({
+        skip,
+        take: pageSize,
         include: {
           profile: true,
+          roles: {
+            include: {
+              role: true,
+            },
+          },
         },
       });
+
+      const usersCount = await this.prisma.users.count();
 
       const data: UserDto[] = users.map((entity) => this.mapToUsersDto(entity));
 
@@ -134,7 +145,12 @@ export class UsersService {
           RESPONSE_MESSAGES.GET_LIST_SUCCESS,
           this.USERS_NAME,
         ),
-        data: data,
+        data: {
+          users: data,
+          page: page,
+          pageSize: pageSize,
+          total: usersCount,
+        },
       };
     } catch (error) {
       this.logger.log('Users fetch error: ' + error.message, this.LOG_CONTEXT);
@@ -435,6 +451,7 @@ export class UsersService {
       status: userEntity.status,
       created: new Date(userEntity.createdAt),
       updated: new Date(userEntity.updatedAt),
+      roles: userEntity.roles.map((ur) => ur.role.name),
     };
   }
 }

@@ -7,18 +7,20 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { PermissionsGuard } from '../permissions/permissions.guard';
+import { PermissionsGuard } from 'src/modules/permissions/permissions.guard';
+import { RolesService } from 'src/modules/roles/roles.service';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { RolesService } from './roles.service';
-import { USERS_PERMISSTIONS } from 'src/constants/users';
 import {
   CreateRoleDto,
   CreateRolePermissionsDto,
   UpdateRoleDto,
-} from './dto/role.dto';
+} from 'src/modules/roles/dto/role.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
+import { USERS_PERMISSTIONS } from 'src/constants/users';
 
 @Controller('roles')
 export class RolesController {
@@ -33,8 +35,8 @@ export class RolesController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get()
   @Permissions(USERS_PERMISSTIONS.VIEW_ROLES)
-  async getRoles() {
-    return await this.rolesService.getRoles();
+  async getRoles(@Query() pagination: PaginationDto) {
+    return await this.rolesService.getRoles(pagination);
   }
 
   /**

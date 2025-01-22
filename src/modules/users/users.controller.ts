@@ -9,14 +9,16 @@ import {
   Body,
   Delete,
   Request,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { SuperAdminGuard } from './super-admin.guard';
-import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto } from './dto/users.dto';
-import { USERS_PERMISSTIONS } from 'src/constants/users';
-import { PermissionsGuard } from '../permissions/permissions.guard';
+import { SuperAdminGuard } from 'src/modules/users/super-admin.guard';
+import { PermissionsGuard } from 'src/modules/permissions/permissions.guard';
+import { UsersService } from 'src/modules/users/users.service';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
+import { CreateUserDto, UpdateUserDto } from 'src/modules/users/dto/users.dto';
+import { PaginationDto } from 'src/modules/dtos/pagination.dto';
+import { USERS_PERMISSTIONS } from 'src/constants/users';
 
 @Controller('users')
 export class UsersController {
@@ -39,13 +41,13 @@ export class UsersController {
    * Permissions: view_users
    *
    * @async
-   * @returns {Array} UserDto
+   * @returns {UserDto[]}
    */
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get()
   @Permissions(USERS_PERMISSTIONS.VIEW_USERS)
-  async getUsers() {
-    return await this.usersService.getUsers();
+  async getUsers(@Query() pagination: PaginationDto) {
+    return await this.usersService.getUsers(pagination);
   }
 
   /**

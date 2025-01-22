@@ -28,6 +28,7 @@ export class UserDto extends ProfileDto {
   username: string;
   email: string;
   status: string;
+  roles: string[];
 }
 
 export class UserInfoDto {
