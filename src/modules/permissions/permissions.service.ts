@@ -36,6 +36,7 @@ export class PermissionsService {
       const permissions: any = await this.prisma.permissions.findMany({
         skip,
         take: pageSize,
+        orderBy: { updatedAt: 'desc' },
       });
 
       const permissionsCount = await this.prisma.permissions.count();

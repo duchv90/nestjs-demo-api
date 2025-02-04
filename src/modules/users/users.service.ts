@@ -125,6 +125,7 @@ export class UsersService {
       const users = await this.prisma.users.findMany({
         skip,
         take: pageSize,
+        orderBy: { updatedAt: 'desc' },
         include: {
           profile: true,
           roles: {

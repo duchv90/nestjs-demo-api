@@ -43,6 +43,7 @@ export class RolesService {
       const roles: any = await this.prisma.roles.findMany({
         skip,
         take: pageSize,
+        orderBy: { updatedAt: 'desc' },
       });
       const rolesCount = await this.prisma.roles.count();
       const data: RoleDto[] = roles.map((entity: Roles) => ({
