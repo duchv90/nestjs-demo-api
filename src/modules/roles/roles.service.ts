@@ -18,6 +18,7 @@ import {
 } from 'src/modules/roles/dto/role.dto';
 import { PaginationDto } from 'src/modules/dtos/pagination.dto';
 import { RESPONSE_MESSAGES } from 'src/constants/message';
+import { USERS_ROLES } from 'src/constants/users';
 
 @Injectable()
 export class RolesService {
@@ -246,9 +247,22 @@ export class RolesService {
    */
   async deleteRole(id: number): Promise<ResponseData<object>> {
     try {
+      // Check if the role exists
+      const role = await this.prisma.roles.findUnique({
+        where: { id: id },
+      });
+
+      if (!role || role.name === USERS_ROLES.SUPER_ADMIN) {
+        throw new NotFoundException(
+          FormatString(RESPONSE_MESSAGES.DELETE_NOT_FOUND, this.ROLES_NAME, id),
+        );
+      }
+
+      // Delete the role
       const deleteRole: Roles = await this.prisma.roles.delete({
         where: { id: id },
       });
+
       return {
         success: true,
         message: FormatString(
