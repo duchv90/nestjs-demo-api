@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -252,10 +253,14 @@ export class RolesService {
         where: { id: id },
       });
 
-      if (!role || role.name === USERS_ROLES.SUPER_ADMIN) {
+      if (!role) {
         throw new NotFoundException(
           FormatString(RESPONSE_MESSAGES.DELETE_NOT_FOUND, this.ROLES_NAME, id),
         );
+      }
+
+      if (role.name === USERS_ROLES.SUPER_ADMIN) {
+        throw new ForbiddenException(RESPONSE_MESSAGES.DELETE_SUPER_ADMIN);
       }
 
       // Delete the role
@@ -274,10 +279,11 @@ export class RolesService {
       };
     } catch (error) {
       this.logger.log('Role delete error: ' + error.message, this.LOG_CONTEXT);
-      if (error.code === 'P2025') {
-        throw new NotFoundException(
-          FormatString(RESPONSE_MESSAGES.DELETE_NOT_FOUND, this.ROLES_NAME, id),
-        );
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
       }
       throw new BadRequestException(RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR);
     }
