@@ -16,6 +16,10 @@ export class CreateRoleDto {
   @IsString({ message: 'description must be a string.' })
   @IsOptional()
   description?: string;
+
+  @IsArray()
+  @IsOptional()
+  permissionIds?: number[];
 }
 
 export class UpdateRoleDto {
@@ -26,6 +30,10 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsString({ message: 'description must be a string.' })
   description?: string;
+
+  @IsArray()
+  @IsOptional()
+  permissionIds?: number[];
 }
 
 export class RolePermissionsDto {

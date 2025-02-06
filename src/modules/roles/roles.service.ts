@@ -147,6 +147,13 @@ export class RolesService {
       const data: Prisma.RolesCreateInput = {
         name: role.name,
         description: role.description || '',
+        permissions: {
+          createMany: {
+            data: role.permissionIds?.map((permissionId) => ({
+              permissionId,
+            })),
+          },
+        },
       };
       const newRole: Roles = await this.prisma.roles.create({
         data: data,
@@ -204,6 +211,13 @@ export class RolesService {
         where: { id: id },
         data: data,
       });
+
+      if (updateRoleDto.permissionIds) {
+        await this.updateRolePermissions(role.id, {
+          permissionIds: updateRoleDto.permissionIds,
+        });
+      }
+
       return {
         success: true,
         message: FormatString(
