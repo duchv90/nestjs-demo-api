@@ -36,11 +36,12 @@ export class AuthService {
         username: username,
       });
 
-      if (!user) return {
-        user: null,
-        status: LOGIN_STATUS.USER_NOT_FOUND,
-        message: RESPONSE_MESSAGES.USER_NOT_FOUND
-      };
+      if (!user)
+        return {
+          user: null,
+          status: LOGIN_STATUS.USER_NOT_FOUND,
+          message: RESPONSE_MESSAGES.USER_NOT_FOUND,
+        };
 
       if (user && bcrypt.compareSync(pass, user.password)) {
         if (user.status === USERS_STATUS.ACTIVE) {
@@ -50,26 +51,29 @@ export class AuthService {
               username: user.username,
             },
             status: LOGIN_STATUS.SUCCESS,
-            message: FormatString(RESPONSE_MESSAGES.GET_SINGLE_SUCCESS, user.username)
+            message: FormatString(
+              RESPONSE_MESSAGES.GET_SINGLE_SUCCESS,
+              user.username,
+            ),
           };
         }
         return {
           user: null,
           status: LOGIN_STATUS.ACCOUNT_LOCKED,
-          message: RESPONSE_MESSAGES.USER_NOT_ACTIVE
+          message: RESPONSE_MESSAGES.USER_NOT_ACTIVE,
         };
       } else {
         return {
           user: null,
           status: LOGIN_STATUS.WRONG_PASSWORD,
-          message: RESPONSE_MESSAGES.WRONG_USER_PASSWORD
+          message: RESPONSE_MESSAGES.WRONG_USER_PASSWORD,
         };
       }
-    } catch (error) {
+    } catch {
       return {
         user: null,
         status: LOGIN_STATUS.SERVER_ERROR,
-        message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+        message: RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       };
     }
   }
@@ -231,7 +235,7 @@ export class AuthService {
   async verifyUser(user: AuthUser): Promise<ResponseData<object>> {
     try {
       const userData = await this.prisma.users.findUnique({
-        where: { id: user.userId }
+        where: { id: user.userId },
       });
       if (userData) {
         return {
@@ -239,7 +243,7 @@ export class AuthService {
           message: 'Authentication successful',
           data: {
             authenticated: true,
-          }
+          },
         };
       } else {
         return {
@@ -247,7 +251,7 @@ export class AuthService {
           message: 'Authentication failed',
           data: {
             authenticated: false,
-          }
+          },
         };
       }
     } catch {
@@ -256,7 +260,7 @@ export class AuthService {
         message: 'Authentication failed',
         data: {
           authenticated: false,
-        }
+        },
       };
     }
   }

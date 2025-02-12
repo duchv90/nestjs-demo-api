@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Users, Prisma, UserProfiles } from '@prisma/client';
+import { Prisma, UserProfiles } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RESPONSE_MESSAGES } from 'src/constants/message';
 import { PrismaService } from 'src/core/database/prisma.service';
@@ -163,7 +163,22 @@ export class UsersService {
     try {
       const users = await this.prisma.users.findUnique({
         where: { id: id },
-        include: { profile: true },
+        include: {
+          profile: true,
+          roles: {
+            include: {
+              role: {
+                include: {
+                  permissions: {
+                    include: {
+                      permission: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
       if (users) {
         const data: UserDto = this.mapToUsersDto(users);
@@ -184,7 +199,7 @@ export class UsersService {
       }
     } catch (error) {
       this.logger.log('Users fetch error: ' + error.message, this.LOG_CONTEXT);
-      if (error.response.custom) {
+      if (error.response && error.response.custom) {
         throw new BadRequestException(error.response.message);
       }
       throw new BadRequestException(RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR);
@@ -452,7 +467,26 @@ export class UsersService {
       status: userEntity.status,
       created: new Date(userEntity.createdAt),
       updated: new Date(userEntity.updatedAt),
-      roles: userEntity.roles.map((ur) => ur.role.name),
+      roles: userEntity.roles?.map((ur) => ur.role.name) || [],
+      rolesIds: userEntity.roles?.map((ur) => ur.role.id) || [],
+      permissions:
+        userEntity.roles?.reduce((acc, ur) => {
+          return [
+            ...new Set([
+              ...acc,
+              ...(ur.role?.permissions?.map((rp) => rp.permission.name) || []),
+            ]),
+          ];
+        }, []) || [],
+      permissionsIds:
+        userEntity.roles?.reduce((acc, ur) => {
+          return [
+            ...new Set([
+              ...acc,
+              ...(ur.role?.permissions?.map((rp) => rp.permission.id) || []),
+            ]),
+          ];
+        }, []) || [],
     };
   }
 }
